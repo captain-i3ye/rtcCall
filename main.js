@@ -31,7 +31,11 @@ const servers = {
 const pc = new RTCPeerConnection(servers);
 let localStream = null;
 let remoteStream = null;
+// const dataChannel = peerConnection.createDataChannel();
 
+// pc.addEventListener('datachannel', event => {
+//   const dataChannel = event.channel;
+// });
 // HTML elements
 const webcamButton = document.getElementById('webcamButton');
 const webcamVideo = document.getElementById('webcamVideo');
@@ -60,7 +64,7 @@ webcamButton.onclick = async () => {
   };
 
   webcamVideo.srcObject = localStream;
-  webcamVideo.muted = false;
+  webcamVideo.muted = true;
   remoteVideo.srcObject = remoteStream;
 
   callButton.disabled = false;
