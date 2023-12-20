@@ -60,6 +60,7 @@ webcamButton.onclick = async () => {
   };
 
   webcamVideo.srcObject = localStream;
+  webcamVideo.muted = false;
   remoteVideo.srcObject = remoteStream;
 
   callButton.disabled = false;
@@ -67,6 +68,7 @@ webcamButton.onclick = async () => {
   webcamButton.disabled = true;
 };
 
+let cid;
 // 2. Create an offer
 callButton.onclick = async () => {
   // Reference Firestore collections for signaling
@@ -75,7 +77,7 @@ callButton.onclick = async () => {
   const answerCandidates = callDoc.collection('answerCandidates');
 
   callInput.value = callDoc.id;
-
+  cid = callDoc.id;
   // Get candidates for caller, save to db
   pc.onicecandidate = (event) => {
     event.candidate && offerCandidates.add(event.candidate.toJSON());
@@ -84,6 +86,7 @@ callButton.onclick = async () => {
   // Create offer
   const offerDescription = await pc.createOffer();
   await pc.setLocalDescription(offerDescription);
+
 
   const offer = {
     sdp: offerDescription.sdp,
@@ -149,4 +152,32 @@ answerButton.onclick = async () => {
       }
     });
   });
+  hangupButton.disabled = false;
 };
+
+hangupButton.onclick = async () => {
+  // pc.createDataChannel("BackChannel").send(document.location.reload());
+  pc.close();
+  // stopStreaming();
+  document.location.reload();
+};
+
+// function stopStreaming(webcamVideo, remoteVideo) {
+//   const localStream = webcamVideo.srcObject;
+//   const remoteStream = remoteVideo.srcObject;
+
+//   const localTracks = localStream.getTracks();
+//   const remoteTracks = remoteStream.getTracks();
+  
+//   localTracks.forEach((track) => {
+//     track.stop();
+//   });
+
+//   remoteTracks.forEach((track) => {
+//     track.stop();
+//   });
+// }
+
+function stopStreaming() {
+  document.location.reload();
+}
