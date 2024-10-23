@@ -1,7 +1,6 @@
-import './style.css';
-
 import firebase from 'firebase/app';
 import 'firebase/firestore';
+import './style.css';
 
 const firebaseConfig = {
   apiKey: "AIzaSyA0pIFVUkCYRicSFKys81JobtSQo4SAoZQ",
@@ -31,11 +30,7 @@ const servers = {
 const pc = new RTCPeerConnection(servers);
 let localStream = null;
 let remoteStream = null;
-// const dataChannel = peerConnection.createDataChannel();
 
-// pc.addEventListener('datachannel', event => {
-//   const dataChannel = event.channel;
-// });
 // HTML elements
 const webcamButton = document.getElementById('webcamButton');
 const webcamVideo = document.getElementById('webcamVideo');
@@ -44,10 +39,16 @@ const callInput = document.getElementById('callInput');
 const answerButton = document.getElementById('answerButton');
 const remoteVideo = document.getElementById('remoteVideo');
 const hangupButton = document.getElementById('hangupButton');
+const statusElement = document.querySelector('.status');
+
+// Update status function
+const updateStatus = (status) => {
+  statusElement.textContent = status;
+};
 
 // 1. Setup media sources
-
 webcamButton.onclick = async () => {
+  updateStatus('Initializing webcam...');
   localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
   remoteStream = new MediaStream();
 
@@ -70,18 +71,18 @@ webcamButton.onclick = async () => {
   callButton.disabled = false;
   answerButton.disabled = false;
   webcamButton.disabled = true;
+  updateStatus('Webcam ready');
 };
 
-let cid;
 // 2. Create an offer
 callButton.onclick = async () => {
-  // Reference Firestore collections for signaling
+  updateStatus('Creating call...');
   const callDoc = firestore.collection('calls').doc();
   const offerCandidates = callDoc.collection('offerCandidates');
   const answerCandidates = callDoc.collection('answerCandidates');
 
   callInput.value = callDoc.id;
-  cid = callDoc.id;
+
   // Get candidates for caller, save to db
   pc.onicecandidate = (event) => {
     event.candidate && offerCandidates.add(event.candidate.toJSON());
@@ -90,7 +91,6 @@ callButton.onclick = async () => {
   // Create offer
   const offerDescription = await pc.createOffer();
   await pc.setLocalDescription(offerDescription);
-
 
   const offer = {
     sdp: offerDescription.sdp,
@@ -105,6 +105,7 @@ callButton.onclick = async () => {
     if (!pc.currentRemoteDescription && data?.answer) {
       const answerDescription = new RTCSessionDescription(data.answer);
       pc.setRemoteDescription(answerDescription);
+      updateStatus('Call connected');
     }
   });
 
@@ -119,10 +120,12 @@ callButton.onclick = async () => {
   });
 
   hangupButton.disabled = false;
+  updateStatus('Waiting for answer...');
 };
 
 // 3. Answer the call with the unique ID
 answerButton.onclick = async () => {
+  updateStatus('Joining call...');
   const callId = callInput.value;
   const callDoc = firestore.collection('calls').doc(callId);
   const answerCandidates = callDoc.collection('answerCandidates');
@@ -149,39 +152,23 @@ answerButton.onclick = async () => {
 
   offerCandidates.onSnapshot((snapshot) => {
     snapshot.docChanges().forEach((change) => {
-      console.log(change);
       if (change.type === 'added') {
         let data = change.doc.data();
         pc.addIceCandidate(new RTCIceCandidate(data));
       }
     });
   });
-  hangupButton.disabled = false;
-};
-
-hangupButton.onclick = async () => {
-  // pc.createDataChannel("BackChannel").send(document.location.reload());
-  pc.close();
-  // stopStreaming();
-  document.location.reload();
-};
-
-// function stopStreaming(webcamVideo, remoteVideo) {
-//   const localStream = webcamVideo.srcObject;
-//   const remoteStream = remoteVideo.srcObject;
-
-//   const localTracks = localStream.getTracks();
-//   const remoteTracks = remoteStream.getTracks();
   
-//   localTracks.forEach((track) => {
-//     track.stop();
-//   });
+  hangupButton.disabled = false;
+  updateStatus('Call connected');
+};
 
-//   remoteTracks.forEach((track) => {
-//     track.stop();
-//   });
-// }
-
-function stopStreaming() {
+// 4. Hangup
+hangupButton.onclick = async () => {
+  updateStatus('Ending call...');
+  pc.close();
   document.location.reload();
-}
+};
+
+// Initialize status
+updateStatus('Not Connected');
