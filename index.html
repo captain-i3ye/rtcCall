@@ -4,38 +4,66 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image" href="favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WebRTC Demo</title>
+    <link rel="stylesheet" href="style.css">
+    <title>Video Conference App</title>
   </head>
   <body>
-    <h2>1. Start your Webcam</h2>
-    <div class="videos">
-      <span>
-        <h3>Local Stream</h3>
-        <video id="webcamVideo" autoplay playsinline></video>
-      </span>
-      <span>
-        <h3>Remote Stream</h3>
-        <video id="remoteVideo" autoplay playsinline></video>
-      </span>
+    <div class="container">
+      <div class="app-header">
+        <h1>Video Conference</h1>
+        <p class="status">Not Connected</p>
+      </div>
 
+      <div class="main-content">
+        <div class="videos">
+          <div class="video-container local">
+            <div class="video-wrapper">
+              <video id="webcamVideo" autoplay playsinline></video>
+              <div class="video-overlay">
+                <span class="label">Local Stream</span>
+              </div>
+            </div>
+          </div>
+          <div class="video-container remote">
+            <div class="video-wrapper">
+              <video id="remoteVideo" autoplay playsinline></video>
+              <div class="video-overlay">
+                <span class="label">Remote Stream</span>
+              </div>
+            </div>
+          </div>
+        </div>
 
+        <div class="controls">
+          <div class="control-section">
+            <button id="webcamButton" class="btn primary">
+              <span class="btn-text">Start Webcam</span>
+            </button>
+          </div>
+
+          <div class="control-section">
+            <button id="callButton" class="btn secondary" disabled>
+              <span class="btn-text">Create Call</span>
+            </button>
+          </div>
+
+          <div class="control-section">
+            <div class="join-call">
+              <input id="callInput" placeholder="Enter call ID..." />
+              <button id="answerButton" class="btn secondary" disabled>
+                <span class="btn-text">Join Call</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="control-section">
+            <button id="hangupButton" class="btn danger" disabled>
+              <span class="btn-text">End Call</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
-
-    <button id="webcamButton">Start webcam</button>
-    <h2>2. Create a new Call</h2>
-    <button id="callButton" disabled>Call</button>
-
-    <h2>3. Join a Call</h2>
-    <p>Answer the call from a different browser window or device</p>
-    
-    <input id="callInput" />
-    <button id="answerButton" disabled>Answer</button>
-
-    <h2>4. Hangup</h2>
-
-    <button id="hangupButton" disabled>Hangup</button>
-
-    <script type="module" src="/main.js"></script>
-
+    <script type="module" src="main.js"></script>
   </body>
 </html>
